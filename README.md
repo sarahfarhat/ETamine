@@ -1,62 +1,75 @@
 # ETamine
-LTR annotation and RTRH extraction pipeline 
-This Nextflow pipeline is designed for the identification, annotation, and clustering of LTR (Long Terminal Repeat) retrotransposons in genomic sequences. 
-It includes multiple steps such as LTRharvest, BLAST of the elements on a LTR database (provided by user), superfamily assignment, family clustering, and RTRH extraction based on BLAST hits.
 
-## Features
+**LTR annotation and RTRH extraction pipeline**
 
-- Runs LTRharvest for detection of LTR retrotransposons.
-- Run BLAST of the LTR sequences against a superfamily database.
-- Assigns sequences to LTR superfamilies (e.g., copia, gypsy, bel).
-- Performs iterative clustering and consensus building per family.
-- Generates outputs including consensus sequences of the RTRH per cluster.
+ETamine is a modular and scalable Nextflow pipeline for the identification, annotation, clustering, and extraction of **LTR retrotransposons** (LTR-RTs) and **Reverse Transcriptase/RNaseH domains** (RTRH) from genomic sequences.
 
-## Requirements
+The pipeline integrates multiple stages including:
+- LTRharvest-based detection
+- BLAST alignment to a user-provided LTR superfamily database
+- Superfamily assignment (e.g., copia, gypsy, bel)
+- Iterative clustering of families
+- Extraction of consensus RTRH domains
 
-- Nextflow (https://www.nextflow.io/)
-- Singularity
-  
-## Installation
+## ✨ Features
 
-Clone this repository:
+- **LTR detection** using `LTRharvest`
+- **BLASTx annotation** against a superfamily database (LTRdb)
+- **Superfamily assignment** based on BLAST and structural features
+- **Clustering** of elements by superfamily over multiple rounds
+- **Consensus extraction** of RTRH domains per cluster
+- **Parallel execution** across multiple genomes or genome chunks
+
+## 🧰 Requirements
+
+- [Nextflow](https://www.nextflow.io/)
+- Singularity (or compatible container runtime)
+- BLAST+ suite
+
+## 📦 Installation
+
+Clone the repository:
+
 ```bash
 git clone https://github.com/sarahfarhat/ETamine.git
 cd ETamine
 ```
 
-## Usage
-Create an input TSV file where each line contains a tab-separated pair:
-```bash
+## 🚀 Usage
+Prepare an input file (input.tsv) with tab-separated values where each line includes a FASTA file path and species name:
+```pgsql
 /path/to/genome1.fasta   species1
 /path/to/genome2.fasta   species2
 ...
 ```
 
-You can parallelize the runs by given splitted files for the same species:
-```bash
+You can parallelize runs per species by splitting the genome into chunks:
+```pgsql
 /path/to/genome1_chunk0001.fasta   species1
 /path/to/genome1_chunk0002.fasta   species1
 /path/to/genome1_chunk0003.fasta   species1
 /path/to/genome2.fasta   species2
 ...
 ```
+Tip: Use fastasplit from Exonerate to split FASTA files.
 
-See fastasplit from exonerate
-
-Add parameters and databases path in the nextflow.config file:
-```bash
-params{
-    inputTable="input_file.tsv"
-    sfdb="/path/for/LTRdatabase.fa"
-    rtrhdb="/path/for/RTRHdatabase.fa"
-    round=4 # number of clustering rounds
-    nb_cpus=28 # cpu number available
-    blastLTRevalue= 1e-15 # BLAST evalue filtering against LTR database
-    blastRTRHevalue= 1e-5 # BLAST evalue filtering against RTRH database
+## Configuration
+Specify all parameters and paths in nextflow.config:
+```groovy
+params {
+    inputTable        = "input.tsv"                    // TSV file with genome paths and species
+    sfdb              = "/path/to/LTRdatabase.fa"      // LTR superfamily protein database
+    rtrhdb            = "/path/to/RTRHdatabase.fa"     // RTRH protein database for BLAST
+    round             = 4                              // Number of clustering rounds
+    nb_cpus           = 28                             // Number of CPUs to use
+    blastLTRevalue    = 1e-15                           // e-value cutoff for LTR BLAST
+    blastRTRHevalue   = 1e-5                            // e-value cutoff for RTRH BLAST
 }
 ```
 
-Then run the pipeline:
+## Run the pipeline
 ```bash
 nextflow run main.nf -resume
 ```
+Use -resume to continue from where a previous run left off.
+
