@@ -1,0 +1,13 @@
+#!/bin/bash
+#SBATCH --job-name=EtamineEric
+#SBATCH --partition=long
+#SBATCH --time=30-00:00:00
+#SBATCH --mem=50GB
+#SBATCH --cpus-per-task=28
+
+# Load modules
+module load nextflow/24.10.4
+module load singularity
+
+# Run Nextflow pipeline
+nextflow run main.nf -resume
