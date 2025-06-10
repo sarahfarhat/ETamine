@@ -26,20 +26,25 @@ cd ETamine
 
 ## Usage
 Create an input TSV file where each line contains a tab-separated pair:
+```bash
 /path/to/genome1.fasta   species1
 /path/to/genome2.fasta   species2
 ...
+```
 
 You can parallelize the runs by given splitted files for the same species:
+```bash
 /path/to/genome1_chunk0001.fasta   species1
 /path/to/genome1_chunk0002.fasta   species1
 /path/to/genome1_chunk0003.fasta   species1
 /path/to/genome2.fasta   species2
 ...
+```
 
 See fastasplit from exonerate
 
 Add parameters and databases path in the nextflow.config file:
+```bash
 params{
     inputTable="input_file.tsv"
     sfdb="/path/for/LTRdatabase.fa"
@@ -49,6 +54,7 @@ params{
     blastLTRevalue= 1e-15 # BLAST evalue filtering against LTR database
     blastRTRHevalue= 1e-5 # BLAST evalue filtering against RTRH database
 }
+```
 
 Then run the pipeline:
 ```bash
