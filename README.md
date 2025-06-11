@@ -33,6 +33,8 @@ Clone the repository:
 ```bash
 git clone https://github.com/sarahfarhat/ETamine.git
 cd ETamine
+cd modules/
+chmod +x consensus.py family.sh gff2fasta.awk indel.py usearch11.0.667_i86linux32
 ```
 
 ## 🚀 Usage
