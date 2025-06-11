@@ -39,6 +39,7 @@ chmod +x consensus.py family.sh gff2fasta.awk indel.py usearch11.0.667_i86linux3
 
 ## 🚀 Usage
 Prepare an input file (input.tsv) with tab-separated values where each line includes a FASTA file path and species name:
+Species names should be short and with only letter or number, no spaces no special caracters
 ```pgsql
 /path/to/genome1.fasta   species1
 /path/to/genome2.fasta   species2
