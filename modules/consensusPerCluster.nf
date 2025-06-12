@@ -50,16 +50,19 @@ process consensusPerCluster {
 
     # Phase 2 : mafft, indel and consensus on separate files
     for file in ${rtrh_fasta_file.baseName}_group_C*.fasta; do
-        echo \${file}
-        if (( \$(grep -c "^>" "\$file") >= 2 )); then
-            mafft "\${file}" > "\${file%.fasta}_aligned.fasta"
-            python3 ${baseDir}/modules/indel.py -f "\${file%.fasta}_aligned.fasta" -o "\${file%.fasta}_indel.fasta"
-            python3 ${baseDir}/modules/consensus.py -f "\${file%.fasta}_indel.fasta" -o "\${file%.fasta}_consensus.fasta"
+        if [ -s \${file} ]
+        then
+            if (( \$(grep -c "^>" "\$file") >= 2 )); then
+                mafft "\${file}" > "\${file%.fasta}_aligned.fasta"
+                python3 ${baseDir}/modules/indel.py -f "\${file%.fasta}_aligned.fasta" -o "\${file%.fasta}_indel.fasta"
+                python3 ${baseDir}/modules/consensus.py -f "\${file%.fasta}_indel.fasta" -o "\${file%.fasta}_consensus.fasta"
+            else
+                python3 ${baseDir}/modules/consensus.py -f "\${file}" -o "\${file%.fasta}_consensus.fasta"
+            fi
         else
-            python3 ${baseDir}/modules/consensus.py -f "\${file}" -o "\${file%.fasta}_consensus.fasta"
+            touch "\${file%.fasta}_consensus.fasta"
         fi
     done
-
     # Phase 3 : regroup cluster files
     cat ${rtrh_fasta_file.baseName}_group_C*_consensus.fasta > ${rtrh_fasta_file.baseName}_Clusters_consensus.fasta
     touch ${rtrh_fasta_file.baseName}_single_sequences.fasta
