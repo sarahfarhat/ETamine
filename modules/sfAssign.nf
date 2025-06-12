@@ -30,20 +30,21 @@ process sfAssign {
     awk 'BEGIN{while(getline < "'${species}'.filtered.assignation.multiSF" > 0){id[\$1]=1}} {if(id[\$1]!=1){if(\$2=="Gypsy"){print \$1 >> "'${species}'.all.gypsy.id"}else{if(\$2=="Bel"){print \$1 >> "'${species}'.all.bel.id"}else{if(\$2=="Copia"){print \$1 >> "'${species}'.all.copia.id"}}}}}' ${species}.filtered.assignation.id
 
     #4: Get blastout6 lines of multiSF copies
-    grep -f ${species}.filtered.assignation.multiSF ${species}.LTRHDB.blastout6.top10 > ${species}.multiSF.blastout6
+    if [ -s ${species}.filtered.assignation.multiSF ]
+    then
+        grep -f ${species}.filtered.assignation.multiSF ${species}.LTRHDB.blastout6.top10 > ${species}.multiSF.blastout6
+        #5: For each multiSF element, count possible SF and remove the once with at least one DIRS_Nimb assignation
+        awk '{split(\$2,t,"_"); print \$1,t[1]}' ${species}.multiSF.blastout6 | sort | uniq -c | awk '{if(NR==1){tag[\$3]=\$1; id=\$2}else{if(\$2==id){tag[\$3]=\$1;}else{printf id"\t"; for(i in tag){printf i"\t"tag[i]"\t"} print ""; id=\$2; delete tag; tag[\$3]=\$1}}}END{printf id"\t"; for(i in tag){printf i"\t"tag[i]"\t"} print "";}' | grep -E "Gypsy|Bel|Copia" > ${species}.all_SF.tsv
+        grep "DIRS_Nimb" ${species}.multiSF.blastout6 | awk '{print \$1}' | sort -u > ${species}.seqwithDIRNimb; grep -v -f ${species}.seqwithDIRNimb ${species}.all_SF.tsv > ${species}.all_SF.NoNimb.tsv
 
-    #5: For each multiSF element, count possible SF and remove the once with at least one DIRS_Nimb assignation
-    awk '{split(\$2,t,"_"); print \$1,t[1]}' ${species}.multiSF.blastout6 | sort | uniq -c | awk '{if(NR==1){tag[\$3]=\$1; id=\$2}else{if(\$2==id){tag[\$3]=\$1;}else{printf id"\t"; for(i in tag){printf i"\t"tag[i]"\t"} print ""; id=\$2; delete tag; tag[\$3]=\$1}}}END{printf id"\t"; for(i in tag){printf i"\t"tag[i]"\t"} print "";}' | grep -E "Gypsy|Bel|Copia" > ${species}.all_SF.tsv
-    grep "DIRS_Nimb" ${species}.multiSF.blastout6 | awk '{print \$1}' | sort -u > ${species}.seqwithDIRNimb; grep -v -f ${species}.seqwithDIRNimb ${species}.all_SF.tsv > ${species}.all_SF.NoNimb.tsv
+        #6: Put in ".to_assign.id" assignations with 8 or 9 same SF
+        awk '{if(\$3==8 || \$3==9){print \$1,\$2 >> "'${species}'.to_assign.id"}else{if(\$5==9 || \$5==8){print \$1,\$4 >> "'${species}'.to_assign.id"}else{if(\$7==9 || \$7==8){print \$1,\$6 >> "'${species}'.to_assign.id" }}}}' ${species}.all_SF.NoNimb.tsv
 
-    #6: Put in ".to_assign.id" assignations with 8 or 9 same SF
-    awk '{if(\$3==8 || \$3==9){print \$1,\$2 >> "'${species}'.to_assign.id"}else{if(\$5==9 || \$5==8){print \$1,\$4 >> "'${species}'.to_assign.id"}else{if(\$7==9 || \$7==8){print \$1,\$6 >> "'${species}'.to_assign.id" }}}}' ${species}.all_SF.NoNimb.tsv
-
-    #7: Add new assignation in SF files
-    grep "Copia" ${species}.to_assign.id | awk '{print \$1}' >> ${species}.all.copia.id
-    grep "Gypsy" ${species}.to_assign.id | awk '{print \$1}' >> ${species}.all.gypsy.id
-    grep "Bel" ${species}.to_assign.id | awk '{print \$1}' >> ${species}.all.bel.id
-
+        #7: Add new assignation in SF files
+        grep "Copia" ${species}.to_assign.id | awk '{print \$1}' >> ${species}.all.copia.id
+        grep "Gypsy" ${species}.to_assign.id | awk '{print \$1}' >> ${species}.all.gypsy.id
+        grep "Bel" ${species}.to_assign.id | awk '{print \$1}' >> ${species}.all.bel.id
+    fi
     #8: Get fasta files
     awk -F '>' 'NR==FNR{ids[\$0]; next} NF>1{f=(\$2 in ids)} f' ${species}.all.copia.id ${ltr_fastafile} | sed -e '/^>/! s/\\(.*\\)/\\U\\1/; s/>_R_/>/' > ${species}.all.copia.fa
     awk -F '>' 'NR==FNR{ids[\$0]; next} NF>1{f=(\$2 in ids)} f' ${species}.all.gypsy.id ${ltr_fastafile} | sed -e '/^>/! s/\\(.*\\)/\\U\\1/; s/>_R_/>/' > ${species}.all.gypsy.fa
