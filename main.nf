@@ -6,25 +6,12 @@ include { concatResLTRharvest } from "${baseDir}/modules/concatResLTRharvest.nf"
 include { blastx } from "${baseDir}/modules/blastx.nf"
 include { sfAssign } from "${baseDir}/modules/sfAssign.nf"
 include { family } from "${baseDir}/modules/family.nf"
+include { makeRTRHdb } from "${baseDir}/modules/makeRTRHdb.nf"
 include { blastx2 } from "${baseDir}/modules/blastx2.nf"
 include { blast2GFF } from "${baseDir}/modules/blast2GFF.nf"
 include { gff2fasta } from "${baseDir}/modules/gff2fasta.nf"
 include { consensusPerCluster } from "${baseDir}/modules/consensusPerCluster.nf"
 
-process makeRTRHdb {
-    tag "Creating RTRH BLAST database"
-
-    input:
-    path fasta_file
-
-    output:
-    path("DBRTRH.*")
-
-    script:
-    """
-    makeblastdb -in ${fasta_file} -dbtype prot -out DBRTRH
-    """
-}
 
 /* Default params */
 params.blastLTRevalue = 1e-15
@@ -38,7 +25,6 @@ log.info """\
         LTR database: ${params.sfdb}
         Number of family rounds: ${params.round}
         RTRH database: ${params.rtrhdb}
-        CPUs number: ${params.nb_cpus}
         """
         .stripIndent()
 

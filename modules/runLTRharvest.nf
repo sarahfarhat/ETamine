@@ -2,6 +2,7 @@
 
 process runLTRharvest {    
     tag "$species"
+    memory '50 GB'
 
     input:
     tuple path(genome), val(species)
